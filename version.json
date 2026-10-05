@@ -1,5 +1,5 @@
 {
-  "version": "5.0.2",
+  "version": "5.0.3",
   "release": "2026-10-05",
   "guide": "floris-native-nl",
   "rounds": 5,
@@ -10,5 +10,5 @@
     "breaths",
     "music"
   ],
-  "repair": "universal-native-guide-two-balanced-300pct-controls"
+  "repair": "native-guide-no-audioworklet-balanced-300pct-controls"
 }
