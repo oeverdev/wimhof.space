@@ -1,5 +1,5 @@
 {
-  "version": "5.0.1",
+  "version": "5.0.2",
   "release": "2026-10-05",
   "guide": "floris-native-nl",
   "rounds": 5,
@@ -10,5 +10,5 @@
     "breaths",
     "music"
   ],
-  "repair": "explicit-interruption-recovery-bounded-cache-local-diagnostics"
+  "repair": "universal-native-guide-two-balanced-300pct-controls"
 }
