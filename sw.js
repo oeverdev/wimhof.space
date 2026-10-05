@@ -178,7 +178,13 @@ const PRECACHE = [
   "./version.json"
 ];
 // END PRECACHE
-const ALLOWED = new Set(PRECACHE.map(path => new URL(path, self.registration.scope).href));
+// Keep large/streamed audio out of CacheStorage. Safari should service media
+// ranges natively from Vercel instead of materialising cached blobs in JS.
+const SHELL_PRECACHE = PRECACHE.filter(path =>
+  !path.startsWith('./assets/guide/') &&
+  !/\.(?:m4a|wav|webm)$/i.test(path)
+);
+const ALLOWED = new Set(SHELL_PRECACHE.map(path => new URL(path, self.registration.scope).href));
 const HOME = new URL('./index.html', self.registration.scope).href;
 const ROOT = new URL('./', self.registration.scope).href;
 
@@ -187,8 +193,8 @@ self.addEventListener('install', event => {
   // batch: a failed download prevents activation and leaves the old cache intact.
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    for (let offset = 0; offset < PRECACHE.length; offset += 2) {
-      await cache.addAll(PRECACHE.slice(offset, offset + 2));
+    for (let offset = 0; offset < SHELL_PRECACHE.length; offset += 4) {
+      await cache.addAll(SHELL_PRECACHE.slice(offset, offset + 4));
     }
   })());
   // Use the browser's normal waiting lifecycle: all old app windows must close.
