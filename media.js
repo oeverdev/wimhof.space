@@ -221,8 +221,8 @@ export class MediaEngine extends EventTarget {
     this.videoHostId = videoHostId;
     this.guideSourceURL = guideSourceURL || guide?.fallbackMediaSrc || '';
     this._guideGains = { voice: 1, breaths: 1, music: 1 };
-    this._guideTransport = guide?.audio && GUIDE_CHANNELS.every(channel => Array.isArray(guide.audio[channel]?.chunks)) ? new GuideTransport(this, guide) : null;
-    this._guideMode = this._guideTransport ? 'stems' : 'native-fallback';
+    this._guideTransport = null;
+    this._guideMode = 'native-fixed-mix';
     this._providedGuide = guideElement;
     this._guideEvents = [];
     this._guidePendingPlays = new Set();
@@ -241,7 +241,7 @@ export class MediaEngine extends EventTarget {
     this._audioIntent = this._videoIntent = 0;
     this._audioDesired = this._videoDesired = false;
     this._audioPosition = this._videoPosition = this._videoDuration = 0;
-    if (this._guideTransport) this._videoDuration = guide.durationMs / 1000;
+    if (guide?.durationMs) this._videoDuration = guide.durationMs / 1000;
     this._audioVolume = this._videoVolume = 1;
     this._videoMuted = false;
     this._videoGeneration = 0;
@@ -642,16 +642,16 @@ export class MediaEngine extends EventTarget {
 
   setGuideGain(channel, value) {
     if (!GUIDE_CHANNELS.includes(channel)) return;
-    this._guideGains[channel] = clamp(value, 0, 2);
+    this._guideGains[channel] = clamp(value, 0, 3);
     if (this._stemGains?.[channel]) smoothGain(this._stemGains[channel].gain, this._guideGains[channel], this._context);
     this._emit();
   }
 
   setVolume(kind, value) {
     if (kind === 'audio') {
-      this._audioVolume = clamp(value, 0, 1);
+      this._audioVolume = clamp(value, 0, 3);
       if (this._gain) smoothGain(this._gain.gain, this.muted ? 0 : this._audioVolume, this._context);
-    } else if (kind === 'video') { this._videoVolume = clamp(value, 0, 1); this._applyVideoSound({ mute: false }); }
+    } else if (kind === 'video') { this._videoVolume = clamp(value, 0, 3); this._applyVideoSound({ mute: false }); }
     this._emit();
   }
 
