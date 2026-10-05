@@ -358,28 +358,24 @@ export class MediaEngine extends EventTarget {
   }
 
   async _createMaster(context) {
-    if (context.audioWorklet && typeof AudioWorkletNode === 'function') {
-      const url = URL.createObjectURL(new Blob([MASTER_WORKLET_SOURCE], { type: 'text/javascript' }));
-      try {
-        await context.audioWorklet.addModule(url);
-        if (this._destroyed) return;
-        this._masterNode = new AudioWorkletNode(context, 'breathe-master-limiter', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [2], channelCount: 2, channelCountMode: 'explicit' });
-        this._masterInput.connect(this._masterNode); this._masterNode.connect(context.destination);
-        this._masterLatency = Math.ceil(context.sampleRate * .005) / context.sampleRate;
-        this._masterMode = 'lookahead-limiter';
-        return;
-      } catch { /* Older mobile browsers use the bounded native graph below. */ }
-      finally { URL.revokeObjectURL(url); }
-    }
+    // Stability-first: never run a custom AudioWorklet during a long breathing
+    // session. Native WebAudio nodes keep 0–300% gain available without a
+    // JavaScript audio processor living for the full 22-minute guide.
     if (this._destroyed) return;
     const compressor = this._masterNode = context.createDynamicsCompressor();
-    compressor.threshold.value = -1; compressor.knee.value = 0; compressor.ratio.value = 20;
-    compressor.attack.value = .001; compressor.release.value = .05;
+    compressor.threshold.value = -3;
+    compressor.knee.value = 6;
+    compressor.ratio.value = 20;
+    compressor.attack.value = .003;
+    compressor.release.value = .08;
     const ceiling = this._masterCeiling = context.createWaveShaper();
-    ceiling.curve = Float32Array.from({ length: 8193 }, (_, i) => Math.max(-.95, Math.min(.95, (i / 8192) * 2 - 1)));
-    ceiling.oversample = '4x';
-    this._masterInput.connect(compressor); compressor.connect(ceiling); ceiling.connect(context.destination);
-    this._masterLatency = .006; this._masterMode = 'native-compressor-ceiling';
+    ceiling.curve = Float32Array.from({ length: 4097 }, (_, i) => Math.tanh(((i / 4096) * 2 - 1) * 1.6) * .95);
+    ceiling.oversample = '2x';
+    this._masterInput.connect(compressor);
+    compressor.connect(ceiling);
+    ceiling.connect(context.destination);
+    this._masterLatency = .006;
+    this._masterMode = 'native-compressor-ceiling-v2';
   }
 
   /** Optional preload: decode a recording without starting sound. */
