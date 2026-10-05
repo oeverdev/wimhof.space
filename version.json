@@ -1,0 +1,14 @@
+{
+  "version": "5.0.1",
+  "release": "2026-10-05",
+  "guide": "floris-native-nl",
+  "rounds": 5,
+  "breathReconstruction": "source-fragments",
+  "timingUnit": "ms",
+  "guideChannels": [
+    "voice",
+    "breaths",
+    "music"
+  ],
+  "repair": "explicit-interruption-recovery-bounded-cache-local-diagnostics"
+}

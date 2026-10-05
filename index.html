@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f5f0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="description" content="Een moment om op adem te komen. Begeleide ademhaling, stemvorkklanken en een rustig ritueel op jouw tempo.">
+  <title>BREATHE — Kom bij jezelf</title>
+  <link rel="preload" href="assets/space-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/app-icon-180.png">
+  <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Naar de inhoud</a>
+  <header class="site-header shell">
+    <a class="brand" href="#main" aria-label="BREATHE — naar boven"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>BREATHE<span class="brand-period">.</span></a>
+    <nav class="main-nav" aria-label="Hoofdnavigatie"><a href="#ademwerk">Ademwerk</a><a href="#klanken">Klanken</a><a href="#ritueel">Ritueel</a></nav>
+    <div class="header-actions"><button class="icon-button" id="motion-toggle" aria-label="Beweging uitzetten" aria-pressed="true" title="Beweging"><span data-icon="sparkles"></span></button><button class="icon-button" id="help-open" aria-label="Hulp en veilig oefenen" title="Hulp"><span data-icon="circle-help"></span></button><span class="profile-badge"><img src="assets/profile.png" alt="Portret van Floris van den Oever" width="1254" height="1254" decoding="async"></span></div>
+  </header>
+  <main id="main" class="shell">
+    <section class="intro" aria-labelledby="page-title">
+      <div><p class="eyebrow"><span class="tiny-dot"></span> Jouw dagelijkse adempauze</p><h1 id="page-title">Adem in.<br><span>Kom bij jezelf.</span></h1></div>
+      <div class="intro-note"><span class="intro-symbol" data-icon="wind"></span><p>Even niets hoeven.<br>Alleen je adem, een klank<br>en een moment voor jezelf.</p><a class="text-link" href="#ademwerk">Vind je eigen ritme <span data-icon="arrow-down"></span></a></div>
+    </section>
+    <section id="ademwerk" class="breath-section" aria-labelledby="breath-title">
+      <div class="section-heading"><div><p class="eyebrow">01 / Ademwerk</p><h2 id="breath-title">Ruimte in je hoofd.</h2></div><span class="section-meta"><span data-icon="clock"></span> 5 rondes · 22 minuten</span></div>
+      <div class="breath-grid">
+        <article class="video-card native-guide-card" aria-labelledby="guide-title">
+          <div class="guide-title-line"><p class="eyebrow">Nederlandse begeleiding</p><h3 id="guide-title">Guided Floris van den Oever Breathwork | 5 Rounds</h3></div>
+          <section class="session-recovery" id="session-recovery" aria-labelledby="recovery-title" hidden>
+            <p class="eyebrow" id="recovery-kicker">Je sessie is bewaard</p><h3 id="recovery-title">Neem eerst een rustige adem.</h3>
+            <p id="recovery-position"></p><p id="recovery-message"></p>
+            <div class="recovery-actions"><button id="recovery-resume" class="recovery-primary">Veilig hervatten</button><button id="recovery-reset">Wissen en terug naar het begin</button></div>
+            <small>Er start pas geluid nadat je kiest. Adem intussen normaal.</small>
+            <div class="recovery-actions"><button id="recovery-diagnostics" type="button">Diagnose downloaden</button></div>
+          </section>
+          <div class="guide-stage" id="guide-stage" data-phase="intro" data-playing="false">
+            <audio id="guide-media" preload="metadata" playsinline aria-label="Nederlandse ademhalingsbegeleiding met Floris van den Oever"></audio>
+            <div class="guide-topline"><span><i class="tiny-dot"></i> Een moment met Floris</span><span id="guide-round-label">5 rondes · op jouw tempo</span></div>
+            <div class="guide-visual" aria-hidden="true"><div class="guide-orbit guide-orbit-one"></div><div class="guide-orbit guide-orbit-two"></div><div class="guide-orbit guide-orbit-three"></div><div class="guide-breath-orb"><span class="guide-orb-label" id="guide-orb-label">Welkom</span><strong id="guide-orb-value">Adem.</strong><span class="guide-orb-foot" id="guide-orb-foot">Kom bij jezelf</span></div></div>
+            <div class="guide-instruction"><p class="guide-phase" id="guide-phase">Neem de tijd om te landen.</p><p class="guide-caption" id="guide-caption">Ga comfortabel zitten of liggen.</p></div>
+            <button class="guide-start" id="guide-start" aria-label="Nederlandse begeleiding afspelen"><span data-icon="play"></span><span>Start je sessie</span></button>
+          </div>
+          <div class="video-controls">
+            <button class="icon-button solid-button" data-play="video" aria-label="Begeleiding afspelen"><span data-icon="play"></span></button>
+            <button class="icon-button" data-restart="video" aria-label="Begeleiding opnieuw vanaf het begin" title="Opnieuw"><span data-icon="rotate-ccw"></span></button>
+            <button class="icon-button" data-stop="video" aria-label="Sessie stoppen en terugzetten" title="Stop en reset"><span class="stop-symbol" aria-hidden="true"></span></button>
+            <button class="icon-button" id="guide-mute" aria-label="Begeleiding dempen" aria-pressed="false" title="Begeleiding dempen"><span data-icon="volume-2"></span></button>
+            <div class="seek-wrap"><input id="video-seek" type="range" min="0" max="1364" step=".1" value="0" aria-label="Positie van de begeleiding"><div class="seek-labels"><span id="video-position">00:00</span><span id="video-duration">22:44</span></div></div>
+            <label class="volume-control guide-master-volume" hidden><span class="sr-only">Totale begeleiding</span><input id="video-volume" type="range" min="0" max="1" step=".01" value="1" aria-label="Totale begeleiding"></label>
+          </div>
+          <fieldset class="guide-mixer"><legend>Jouw geluidsbalans</legend><div class="guide-mixer-channels">
+            <div class="guide-channel"><div class="guide-channel-label"><label for="guide-volume-voice">Stem</label><output id="guide-value-voice" for="guide-volume-voice">100%</output></div><input id="guide-volume-voice" type="range" min="0" max="200" step="1" value="100" aria-valuetext="100 procent"></div>
+            <div class="guide-channel"><div class="guide-channel-label"><label for="guide-volume-breaths">Ademgeluiden</label><output id="guide-value-breaths" for="guide-volume-breaths">100%</output></div><input id="guide-volume-breaths" type="range" min="0" max="200" step="1" value="100" aria-valuetext="100 procent"></div>
+            <div class="guide-channel"><div class="guide-channel-label"><label for="guide-volume-music">Achtergrondmuziek</label><output id="guide-value-music" for="guide-volume-music">100%</output></div><input id="guide-volume-music" type="range" min="0" max="200" step="1" value="100" aria-valuetext="100 procent"></div>
+          </div><p class="guide-mixer-status" id="guide-mixer-status" role="status">Stem, ademgeluiden en muziek afzonderlijk instellen.</p></fieldset>
+          <div class="video-foot"><span id="video-status" role="status">De begeleiding wordt klaargezet</span><span>Nederlands · 30 ademteugen per ronde</span></div>
+        </article>
+        <aside class="round-card" aria-labelledby="rounds-title">
+          <div class="round-heading"><div><p class="eyebrow">Stap voor stap</p><h3 id="rounds-title">Jouw vijf rondes</h3></div><span class="round-count" id="round-count">0 / 5</span></div>
+          <ol id="round-list" class="round-list" aria-label="Rondevoortgang van de begeleiding"></ol>
+          <div class="round-summary"><span class="tiny-dot"></span><p id="round-summary" aria-live="polite">Begin met de introductie.</p></div>
+          <p class="round-disclaimer">Volgt de positie van de begeleiding. Luister steeds naar je lichaam.</p>
+        </aside>
+      </div>
+      <p class="safety-note"><span data-icon="info"></span><span>Oefen zittend of liggend op een veilige plek. Nooit in of bij water, onder de douche of tijdens het rijden. Forceer niets en stop als je je niet prettig voelt.</span></p>
+    </section>
+    <section id="klanken" class="sounds-section" aria-labelledby="sounds-title">
+      <div class="section-heading"><div><p class="eyebrow">02 / Klanken</p><h2 id="sounds-title">Laat het even resoneren.</h2></div><p class="section-description">Kies een klank die bij je past.<br>Los luisteren of zacht naast de begeleiding.</p></div>
+      <div class="sound-grid" id="sound-grid" aria-label="Stemvorkklanken"></div>
+      <p class="sound-footnote"><span data-icon="headphones"></span>Een prettig, laag volume is genoeg. Kies je klank; druk daarna op afspelen.</p>
+    </section>
+    <section id="ritueel" class="ritual-section" aria-labelledby="ritual-title">
+      <div class="ritual-intro"><p class="eyebrow">03 / Een klein ritueel</p><h2 id="ritual-title">Neem de rust<br>met je mee.</h2><p>Geen haast. Geen prestatie.<br>Een paar eenvoudige stappen,<br>helemaal op jouw tempo.</p><span class="ritual-flower" data-icon="sun" aria-hidden="true"></span></div>
+      <div class="ritual-steps">
+        <article><span class="ritual-number">01</span><div><h3>Maak ruimte</h3><p>Kies een rustige, prettig geventileerde plek. Leg een mat, kussen en eventueel een slaapmasker klaar.</p></div></article>
+        <article><span class="ritual-number">02</span><div><h3>Kom comfortabel liggen</h3><p>Of ga stevig zitten. Ontspan je schouders en geef je lichaam de ruimte.</p></div></article>
+        <article><span class="ritual-number">03</span><div><h3>Volg je adem</h3><p>Laat Floris je door vijf rondes begeleiden. Pauzeer wanneer je wilt en forceer geen ademretentie.</p></div></article>
+        <article><span class="ritual-number">04</span><div><h3>Kom rustig bij</h3><p>Adem weer normaal. Beweeg je vingers en tenen, neem je masker af en blijf nog even liggen.</p></div></article>
+        <article><span class="ritual-number">05</span><div><h3>Klank, en eventueel een douche</h3><p>Luister op een aangenaam volume. Adem bij een douche altijd normaal, zonder ademretentie. Houd je apparaat droog en buiten spatten.</p></div></article>
+        <article><span class="ritual-number">06</span><div><h3>Sluit zacht af</h3><p>Droog je af en kom comfortabel op temperatuur. Neem dit moment van rust mee in je dag.</p></div></article>
+      </div>
+    </section>
+    <footer class="page-footer"><a class="brand small-brand" href="#main">BREATHE.</a><p>Een moment voor jezelf.</p><button class="text-link" id="footer-help">Over deze ruimte <span data-icon="arrow-up-right"></span></button></footer>
+  </main>
+  <aside class="sound-dock" id="sound-dock" aria-label="Speler voor de geselecteerde klank">
+    <button class="icon-button dock-minimize" id="dock-minimize" aria-label="Klankspeler minimaliseren" title="Klankspeler minimaliseren" aria-controls="sound-dock"><span data-icon="x"></span></button>
+    <div class="dock-inner shell">
+      <div class="dock-track"><img id="dock-image" src="assets/fork-original.jpg" alt="" width="56" height="56"><div><span class="eyebrow" id="dock-kicker">Jouw klank</span><strong id="dock-title">Stemvork</strong><span id="audio-status" role="status">Klaar om te luisteren</span></div></div>
+      <div class="dock-transport"><button class="icon-button" data-restart="audio" aria-label="Klank opnieuw vanaf het begin" title="Opnieuw"><span data-icon="rotate-ccw"></span></button><button class="icon-button solid-button dock-play" data-play="audio" aria-label="Klank afspelen"><span data-icon="play"></span></button><button class="icon-button" id="loop-toggle" aria-label="Herhalen uitzetten" aria-pressed="true" title="Herhalen aan"><span data-icon="repeat"></span></button></div>
+      <div class="seek-wrap audio-seek-wrap"><input id="audio-seek" type="range" min="0" max="1" step=".01" value="0" aria-label="Klankpositie" disabled><div class="seek-labels"><span id="audio-position">00:00</span><span id="audio-duration">--:--</span></div></div>
+      <label class="volume-control audio-volume" title="Klankvolume"><span data-icon="volume-2"></span><span class="sr-only">Klankvolume</span><input id="audio-volume" type="range" min="0" max="1" step=".01" value=".7" aria-label="Klankvolume"></label>
+      <div class="timer-controls"><button class="timer-toggle" id="timer-toggle" aria-pressed="false" aria-label="Klanktimer van 20 minuten aanzetten"><span data-icon="timer"></span><span><strong id="timer-value">20:00</strong><small id="timer-label">Timer uit</small></span></button><button class="icon-button timer-reset" id="timer-reset" aria-label="Klanktimer opnieuw instellen" title="Timer opnieuw" hidden><span data-icon="rotate-ccw"></span></button></div>
+    </div>
+  </aside>
+  <button class="dock-reopen" id="dock-reopen" aria-label="Klankspeler openen" aria-controls="sound-dock" aria-expanded="false" hidden><span data-icon="headphones"></span><span>Klankspeler</span></button>
+  <div class="notice" id="notice" role="status" aria-live="polite" hidden><p id="notice-text"></p><button class="icon-button" id="notice-close" aria-label="Melding sluiten"><span data-icon="x"></span></button></div>
+  <dialog id="help-dialog" aria-labelledby="help-title"><div class="dialog-heading"><p class="eyebrow">Goed om te weten</p><button class="icon-button" id="help-close" aria-label="Hulp sluiten"><span data-icon="x"></span></button></div><h2 id="help-title">Een rustige plek,<br>op jouw tempo.</h2><h3>Ademwerk & klanken</h3><p>Stem, ademgeluiden en achtergrondmuziek hebben elk een eigen volumeregelaar. De begeleiding en je gekozen klank hebben hun eigen afspeelknop. Ze mogen samen spelen. Een klank kiezen start nooit automatisch geluid; er klinkt steeds één stemvork tegelijk.</p><h3>De stem van Floris</h3><p>Nederlandse begeleiding met de door Floris gekozen AI-stem. Muziek uit de oorspronkelijke opname. Overlappende ademgeluiden zijn hersteld met schone ademfragmenten uit dezelfde opname.</p><h3>Veilig oefenen</h3><p>Doe ademwerk zittend of liggend, op een veilige plek en buiten het water. Niet tijdens het rijden, in bad of onder de douche. Forceer niets en stop als je je niet prettig voelt. Neem daarna tijd om bij te komen.</p><h3>Je optionele klanktimer</h3><p>De timer telt 20 minuten daadwerkelijk afgespeelde klank. Pauzeren pauzeert ook de timer. Het is geen voorgeschreven doucheduur. Adem bij een douche normaal en houd je apparaat droog, stabiel en buiten spatten.</p><h3>Op je beginscherm</h3><p>Open in Safari, tik op Deel en kies ‘Zet op beginscherm’. De pagina past zich aan jouw scherm aan, in portret en landschap.</p><p class="help-fineprint">Rondemarkeringen volgen de audiopositie van de begeleiding en bewijzen geen uitgevoerde ademhaling. Klankbeweging is een rustige visuele interpretatie van het geluid. ‘Verminder beweging’ op je apparaat wordt gerespecteerd.</p><p class="help-fineprint">Iconen: Lucide, ISC-licentie. Lettertype: Space Grotesk.</p></dialog>
+  <noscript><p class="noscript">Schakel JavaScript in om de spelers te gebruiken. <a href="assets/floris-guide.m4a">Luister naar de Nederlandse begeleiding.</a></p></noscript>
+</body>
+</html>

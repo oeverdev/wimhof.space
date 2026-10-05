@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "source": "fork-source.opus.webm",
+  "playback": "fork-loop.wav",
+  "sourceSha256": "f58d392ba82bea23788f0f6a1023b7cf6b64e52aab3ce3e085ef992f06b79854",
+  "playbackSha256": "60ba96a1f4614f96391a81245bcebfbdf9ebbbc5554d65b61c24eec0d85dc5ef",
+  "sampleRate": 48000,
+  "channels": 2,
+  "containerDuration": 42.288,
+  "decodedSourceDuration": 42.26133333333333,
+  "startSample": 104566,
+  "endSampleExclusive": 1946229,
+  "startSeconds": 2.1784583333333334,
+  "endSeconds": 40.5464375,
+  "duration": 38.367979166666665,
+  "playbackContainsSelectedCrop": true,
+  "processing": "Exact float32 PCM crop only. No fade, crossfade, normalization, EQ, compression, denoising, resampling or pitch change.",
+  "assessment": "Signal continuity checked. Human listening not performed; perceptual seam approval remains unverified."
+}
