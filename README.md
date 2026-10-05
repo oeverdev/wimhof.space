@@ -1,2 +1,3 @@
 # wimhof.space
-guided breathing
+guided breathing sessions
+ 
