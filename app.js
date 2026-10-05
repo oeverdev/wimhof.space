@@ -22,7 +22,7 @@ let lastNotice = '';
 let selectionIntent = 0;
 let previousFocus;
 let lastSnapshot;
-let dockMinimized = preferences.dockMinimized === true;
+let dockMinimized = true;
 let clockFrame = 0;
 
 function setText(selector, value) {
@@ -160,7 +160,7 @@ media.addEventListener('interruption', offerInterruptedRecovery);
 
 function savePreferences() {
   const snapshot = media.getSnapshot();
-  try { localStorage.setItem(preferenceKey, JSON.stringify({ motion: motionEnabled, loop: snapshot.audio.loop, videoVolume: 1, audioVolume: snapshot.audio.volume, guideGains: snapshot.guideGains, dockMinimized })); }
+  try { localStorage.setItem(preferenceKey, JSON.stringify({ motion: motionEnabled, loop: snapshot.audio.loop, videoVolume: snapshot.video.volume, audioVolume: snapshot.audio.volume, dockMinimized })); }
   catch { /* Private browsing remains usable. */ }
 }
 function renderRounds(video) {
@@ -235,19 +235,11 @@ function render(snapshot) {
     }
     setText(`#${kind}-duration`, formatTime(duration, true));
     const volume = $(`#${kind}-volume`);
-    if (Number.isFinite(state.volume) && document.activeElement !== volume) volume.value = String(state.volume);
-    volume.style.setProperty('--progress', `${Number(volume.value) * 100}%`);
+    if (Number.isFinite(state.volume) && document.activeElement !== volume) volume.value = String(Math.round(state.volume * 100));
+    volume.style.setProperty('--progress', `${Number(volume.value) / 3}%`);
+    volume.setAttribute('aria-valuetext', `${Math.round(Number(volume.value))} procent`);
+    setText(`#${kind}-volume-value`, `${Math.round(Number(volume.value))}%`);
   }
-  for (const channel of ['voice', 'breaths', 'music']) {
-    const slider = $(`#guide-volume-${channel}`);
-    const gain = snapshot.guideGains?.[channel] ?? 1;
-    if (document.activeElement !== slider) slider.value = String(Math.round(gain * 100));
-    slider.disabled = snapshot.guideMixerAvailable === false;
-    slider.style.setProperty('--progress', `${Number(slider.value) / 2}%`);
-    slider.setAttribute('aria-valuetext', `${Math.round(gain * 100)} procent`);
-    setText(`#guide-value-${channel}`, `${Math.round(gain * 100)}%`);
-  }
-  setText('#guide-mixer-status', snapshot.guideMode === 'native-fallback' ? 'Deze browser speelt de vaste mix. Afzonderlijke kanaalregeling is hier niet beschikbaar.' : 'Stem, ademgeluiden en muziek afzonderlijk instellen.');
   $('#guide-mute')?.setAttribute('aria-pressed', String(video.muted));
   $('#guide-mute')?.setAttribute('aria-label', video.muted ? 'Begeleiding dempen uitzetten' : 'Begeleiding dempen');
   for (const card of $$('.sound-card')) {
@@ -372,18 +364,17 @@ for (const kind of ['video', 'audio']) {
   });
   seek.addEventListener('blur', () => { delete seek.dataset.scrubbing; render(media.getSnapshot()); });
   const volume = $(`#${kind}-volume`);
-  volume.addEventListener('input', () => media.setVolume(kind, Number(volume.value)));
+  volume.addEventListener('input', () => {
+    media.setVolume(kind, Number(volume.value) / 100);
+    volume.setAttribute('aria-valuetext', `${Math.round(Number(volume.value))} procent`);
+    setText(`#${kind}-volume-value`, `${Math.round(Number(volume.value))}%`);
+  });
   volume.addEventListener('change', savePreferences);
 }
 $('#loop-toggle').addEventListener('click', () => { media.setLoop(!media.getSnapshot().audio.loop); savePreferences(); });
 $('#timer-toggle').addEventListener('click', () => { const session = media.getSnapshot().session; if (session.complete) media.resetSession(); media.setSessionEnabled(!session.enabled); });
 $('#timer-reset').addEventListener('click', () => media.resetSession());
 $('#notice-close').addEventListener('click', () => { $('#notice').hidden = true; });
-for (const channel of ['voice', 'breaths', 'music']) {
-  const slider = $(`#guide-volume-${channel}`);
-  slider.addEventListener('input', () => media.setGuideGain(channel, Number(slider.value) / 100));
-  slider.addEventListener('change', () => { savePreferences(); captureSession('pause'); });
-}
 $('#guide-mute')?.addEventListener('click', () => media.setGuideMuted(!media.getSnapshot().video.muted));
 function setDockMinimized(value, focus = false) {
   dockMinimized = Boolean(value);
@@ -416,12 +407,8 @@ $('#help-close').addEventListener('click', () => dialog.close());
 dialog.addEventListener('close', () => previousFocus?.focus());
 dialog.addEventListener('click', event => { const bounds = dialog.getBoundingClientRect(); if (event.target === dialog && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) dialog.close(); });
 
-media.setVolume('video', 1);
-for (const channel of ['voice', 'breaths', 'music']) {
-  const legacy = Number.isFinite(preferences.videoVolume) ? Math.min(1, Math.max(0, preferences.videoVolume)) : 1;
-  media.setGuideGain(channel, Number.isFinite(preferences.guideGains?.[channel]) ? preferences.guideGains[channel] : legacy);
-}
-media.setVolume('audio', Number.isFinite(preferences.audioVolume) ? preferences.audioVolume : .7);
+media.setVolume('video', Number.isFinite(preferences.videoVolume) ? preferences.videoVolume : 1);
+media.setVolume('audio', Number.isFinite(preferences.audioVolume) ? preferences.audioVolume : 1);
 media.setLoop(preferences.loop !== false);
 updateMotion();
 render(media.getSnapshot());
