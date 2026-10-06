@@ -186,20 +186,27 @@ function renderRounds(video) {
   const summary = progress.phase === 'intro' ? video.state === 'playing' ? 'Neem even de tijd om te landen.' : 'Begin met de introductie.' : ['closing', 'complete'].includes(progress.phase) ? 'Vijf rondes voorbij. Kom rustig bij.' : video.state === 'paused' ? `Ronde ${progress.currentRound} · gepauzeerd` : video.state === 'buffering' ? `Ronde ${progress.currentRound} · even laden` : `Ronde ${progress.currentRound} · volg de begeleiding`;
   setText('#round-summary', summary);
 }
+let lastClockUiAt = 0;
 function scheduleClock() {
   const active = lastSnapshot?.video.state === 'playing' && !document.hidden;
-  if (!active) { cancelAnimationFrame(clockFrame); clockFrame = 0; return; }
+  if (!active) { cancelAnimationFrame(clockFrame); clockFrame = 0; lastClockUiAt = 0; return; }
   if (clockFrame) return;
-  clockFrame = requestAnimationFrame(() => {
+  clockFrame = requestAnimationFrame(now => {
     clockFrame = 0;
-    const nativePosition = Number($('#guide-media')?.currentTime);
-    const video = { ...lastSnapshot.video, position: Number.isFinite(nativePosition) ? nativePosition : media.getGuidePosition() };
-    renderRounds(video);
-    const seek = $('#video-seek');
-    if (!seek.dataset.scrubbing) {
-      seek.value = String(video.position);
-      seek.style.setProperty('--progress', `${Math.min(100, video.position / (GUIDE.durationMs / 1000) * 100)}%`);
-      setText('#video-position', formatTime(video.position));
+    // Keep the expensive sidebar/seek DOM work off the 60 fps breathing path.
+    // The GuideScene owns the per-frame compositor animation; this clock only
+    // refreshes human-readable progress often enough to look continuous.
+    if (!lastClockUiAt || now - lastClockUiAt >= 125) {
+      lastClockUiAt = now;
+      const nativePosition = Number($('#guide-media')?.currentTime);
+      const video = { ...lastSnapshot.video, position: Number.isFinite(nativePosition) ? nativePosition : media.getGuidePosition() };
+      renderRounds(video);
+      const seek = $('#video-seek');
+      if (!seek.dataset.scrubbing) {
+        seek.value = String(video.position);
+        seek.style.setProperty('--progress', `${Math.min(100, video.position / (GUIDE.durationMs / 1000) * 100)}%`);
+        setText('#video-position', formatTime(video.position));
+      }
     }
     scheduleClock();
   });
