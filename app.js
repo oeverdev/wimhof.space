@@ -237,8 +237,10 @@ function render(snapshot) {
     const volume = $(`#${kind}-volume`);
     if (Number.isFinite(state.volume) && document.activeElement !== volume) volume.value = String(Math.round(state.volume * 100));
     volume.style.setProperty('--progress', `${Number(volume.value) / 3}%`);
-    volume.setAttribute('aria-valuetext', `${Math.round(Number(volume.value))} procent`);
-    setText(`#${kind}-volume-value`, `${Math.round(Number(volume.value))}%`);
+    const requested = Math.round(Number(volume.value));
+    const nativeCap = kind === 'video' && requested > 100;
+    volume.setAttribute('aria-valuetext', nativeCap ? `${requested} procent ingesteld; native veilige uitvoer 100 procent` : `${requested} procent`);
+    setText(`#${kind}-volume-value`, nativeCap ? `${requested}% · native max 100%` : `${requested}%`);
   }
   $('#guide-mute')?.setAttribute('aria-pressed', String(video.muted));
   $('#guide-mute')?.setAttribute('aria-label', video.muted ? 'Begeleiding dempen uitzetten' : 'Begeleiding dempen');
