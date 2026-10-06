@@ -1,5 +1,5 @@
 {
-  "version": "5.0.5",
+  "version": "5.0.6",
   "release": "2026-10-05",
   "guide": "floris-native-nl",
   "rounds": 5,
@@ -10,5 +10,5 @@
     "breaths",
     "music"
   ],
-  "repair": "native-media-buffering-state-machine"
+  "repair": "native-clock-countdown-sync-smooth-responsive"
 }
