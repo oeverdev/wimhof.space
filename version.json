@@ -1,6 +1,6 @@
 {
-  "version": "5.0.6",
-  "release": "2026-10-05",
+  "version": "5.0.7",
+  "release": "2026-10-06",
   "guide": "floris-native-nl",
   "rounds": 5,
   "breathReconstruction": "source-fragments",
@@ -10,5 +10,5 @@
     "breaths",
     "music"
   ],
-  "repair": "native-clock-countdown-sync-smooth-responsive"
+  "repair": "isolated-60fps-guide-throttled-progress-ui"
 }
