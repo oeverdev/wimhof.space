@@ -743,22 +743,15 @@ export class MediaEngine extends EventTarget {
     return guide;
   }
 
-  _ensureGuideGraph(guide) {
-    const context = this._ensureContext();
-    if (this._guideSourceNode) return context;
-    // Streaming media stays in the native element; only a small graph is made.
-    // Never decode the full narration/video into an AudioBuffer.
-    this._guideSourceNode = context.createMediaElementSource(guide);
-    this._guideGain = context.createGain();
-    this._guideSourceNode.connect(this._guideGain);
-    this._guideGain.connect(this._masterInput);
-    this._applyVideoSound();
-    return context;
+  _ensureGuideGraph() {
+    // Breathing deliberately bypasses WebAudio. The canonical guide is played
+    // directly by the native HTMLMediaElement for maximum long-session stability.
+    return null;
   }
 
   async _playVideo() {
     if (this._guideTransport) return this._guideTransport.play();
-    if (this._videoState === 'playing' && !this._guide?.paused && this._context?.state === 'running') return;
+    if (this._videoState === 'playing' && !this._guide?.paused) return;
     const intent = ++this._videoIntent;
     this._videoDesired = true;
     const replay = this._videoState === 'ended' || this._guide?.ended;
@@ -769,24 +762,17 @@ export class MediaEngine extends EventTarget {
     this._guidePendingPlays.add(intent);
     try {
       guide = this._ensureGuide();
-      const context = this._ensureGuideGraph(guide);
+      this._ensureGuideGraph();
       if (guide.error) {
         this._pendingVideoSeek = this._videoPosition;
         guide.load();
       }
       if (replay) { this._pendingVideoSeek = 0; this._flushGuideSeek(); }
-      // Both calls must be made in the original click stack, before any await.
-      const resumed = context.resume();
-      const played = guide.play();
-      await Promise.all([resumed, played, this._masterReady]);
+      // Native media play remains in the original user-gesture stack.
+      await guide.play();
       if (this._destroyed || intent !== this._videoIntent || !this._videoDesired) {
         if (!this._videoDesired || this._destroyed) guide.pause();
         return;
-      }
-      if (context.state !== 'running') {
-        const error = new Error('Druk opnieuw op afspelen om het geluid van de begeleiding te starten.');
-        error.name = 'NotAllowedError';
-        throw error;
       }
       this._readVideo();
       this._videoState = guide.paused ? 'paused' : guide.seeking || guide.readyState < 3 ? 'buffering' : 'playing';
@@ -827,12 +813,8 @@ export class MediaEngine extends EventTarget {
       this._messages.video = '';
     } else if (name === 'playing') {
       if (!this._videoDesired) { guide.pause(); return; }
-      if (this._guideGain && this._context.state !== 'running' && !this._guidePendingPlays.size) {
-        this._interrupt('native-context-unavailable', ['video']);
-      } else {
-        this._videoState = this._guideGain && this._context.state !== 'running' ? 'loading' : 'playing';
-        this._messages.video = '';
-      }
+      this._videoState = 'playing';
+      this._messages.video = '';
     } else if (name === 'pause' && guide.paused && !guide.ended && this._videoState !== 'error') {
       if (this._videoDesired) this._interrupt('native-pause', ['video']);
       else { ++this._videoIntent; this._videoState = 'paused'; }
@@ -865,25 +847,20 @@ export class MediaEngine extends EventTarget {
     } else if (name === 'loadstart' && this._videoDesired) this._videoState = 'loading';
     if (name === 'volumechange') {
       this._videoMuted = Boolean(guide.muted);
-      if (!this._guideGain) this._videoVolume = clamp(guide.volume, 0, 1);
-      if (this._guideGain) this._guideGain.gain.value = this._videoMuted ? 0 : this._videoVolume;
+      // Native media volume is capped by the platform at 100%.
+      this._nativeGuideVolume = clamp(guide.volume, 0, 1);
     }
     this._emit();
   }
 
   _applyVideoSound({ volume = true, mute = true } = {}) {
-    if (this._guideTransport) {
-      if (this._stemBus) smoothGain(this._stemBus.gain, this._videoMuted ? 0 : this._videoVolume, this._context);
-      return;
-    }
     if (!this._guide) return;
     this._settingGuideSound = true;
     try {
-      // GainNode controls guide volume independently on mobile. Native volume
-      // remains an additional observable factor when its own controls are used.
-      if (volume) this._guide.volume = this._guideGain ? 1 : this._videoVolume;
+      // HTMLMediaElement is the complete breathing audio path. Values above
+      // 100% remain a UI preference but are safely capped to native 100%.
+      if (volume) this._guide.volume = clamp(this._videoVolume, 0, 1);
       if (mute) this._guide.muted = this._videoMuted;
-      if (this._guideGain) this._guideGain.gain.value = this._videoMuted ? 0 : this._videoVolume;
     } finally { this._settingGuideSound = false; }
     this._readVideo();
   }
@@ -923,7 +900,7 @@ export class MediaEngine extends EventTarget {
   getSnapshot() {
     this._syncSession(); this._readVideo();
     return {
-      video: { position: this._videoPosition, duration: this._videoDuration, state: this._videoState, volume: this._guideGain ? this._videoVolume * this._nativeGuideVolume : this._videoVolume, muted: this._videoMuted, seeking: this._guideSeeking, message: this._messages.video },
+      video: { position: this._videoPosition, duration: this._videoDuration, state: this._videoState, volume: this._videoVolume, nativeVolume: this._nativeGuideVolume, muted: this._videoMuted, seeking: this._guideSeeking, message: this._messages.video },
       audio: { trackId: this._trackId, position: this._audioNow(), duration: this._durations.get(this._trackId) || 0, state: this._audioState, loop: this.loop, level: this.getAudioLevel(), volume: this._audioVolume, message: this._messages.audio },
       muted: this.muted,
       guideGains: { ...this._guideGains },
