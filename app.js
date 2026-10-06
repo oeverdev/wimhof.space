@@ -192,7 +192,8 @@ function scheduleClock() {
   if (clockFrame) return;
   clockFrame = requestAnimationFrame(() => {
     clockFrame = 0;
-    const video = { ...lastSnapshot.video, position: media.getGuidePosition() };
+    const nativePosition = Number($('#guide-media')?.currentTime);
+    const video = { ...lastSnapshot.video, position: Number.isFinite(nativePosition) ? nativePosition : media.getGuidePosition() };
     renderRounds(video);
     const seek = $('#video-seek');
     if (!seek.dataset.scrubbing) {
