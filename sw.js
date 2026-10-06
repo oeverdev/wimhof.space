@@ -1,5 +1,5 @@
 /* BREATHE: one complete, same-origin release; never interrupt an active session. */
-const RELEASE = 'v5.0.6-native-clock-sync';
+const RELEASE = 'v5.0.7-native-clock-sync';
 const CACHE_PREFIX = `breathe-flow:${self.registration.scope}:`;
 const CACHE_NAME = `${CACHE_PREFIX}${RELEASE}`;
 // BEGIN PRECACHE
