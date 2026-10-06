@@ -819,11 +819,12 @@ export class MediaEngine extends EventTarget {
       if (this._videoDesired) this._interrupt('native-pause', ['video']);
       else { ++this._videoIntent; this._videoState = 'paused'; }
     } else if (name === 'waiting' || name === 'stalled') {
-      if (!guide.paused && this._videoDesired && guide.readyState < 3) {
-        // Initial loading and an explicit seek are allowed to prepare audio.
-        // Buffered stalled events do not prove an audible interruption.
-        if (!guide.seeking && this._videoState === 'playing') this._interrupt('native-starved', ['video']);
-        else this._videoState = 'buffering';
+      // Normal HTMLMediaElement buffering is NOT a session interruption.
+      // Safari can emit waiting/stalled at byte-range boundaries and then
+      // continue with canplay/playing. Keep user intent and position intact.
+      if (this._videoDesired && !guide.ended) {
+        this._videoState = 'buffering';
+        this._messages.video = '';
       }
     } else if (name === 'seeking') {
       this._guideSeeking = true;
