@@ -22,6 +22,7 @@ export function getGuideFrame(guide, inputPosition) {
   const round = guide.rounds.find(item => positionMs >= item.startMs && positionMs < item.endMs);
   const segment = guide.breathingSegments.find(item => item.round === round?.number);
   const cue = guide.cues.findLast(item => positionMs >= item.startMs && positionMs < item.endMs);
+  const countdown = guide.cues.findLast(item => item.kind === 'countdown' && positionMs >= item.startMs && positionMs < item.endMs);
   const frame = { position, positionMs, round: round?.number ?? null, phase: 'intro', direction: 'still', count: null, radius: .65, label: 'Welkom', value: 'Adem.', foot: 'Kom bij jezelf', instruction: 'Neem de tijd om te landen.', caption: 'Ga comfortabel zitten of liggen.' };
   if (positionMs >= guide.durationMs) {
     Object.assign(frame, { phase: 'complete', label: 'Vijf rondes', value: 'Rust.', foot: 'Neem dit moment mee', instruction: 'Adem weer op je eigen ritme.', caption: 'Blijf nog even zitten of liggen en kom rustig bij.' });
@@ -36,15 +37,18 @@ export function getGuideFrame(guide, inputPosition) {
   } else if (segment && positionMs >= segment.endMs && positionMs < segment.retentionStartMs) {
     Object.assign(frame, { phase: 'settle', radius: .46, label: 'Laat rustig los', value: 'Rust.', foot: 'Maak je uitademing af', instruction: 'Laat je laatste adem rustig los.', caption: 'Zo begint het stille moment.' });
   } else if (segment && positionMs >= segment.retentionStartMs && positionMs < segment.retentionEndMs) {
-    const seconds = Math.ceil((segment.retentionEndMs - positionMs) / 1000);
-    Object.assign(frame, { phase: 'hold', radius: .46, label: 'Rust in de stilte', value: `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`, remainingMs: segment.retentionEndMs - positionMs, foot: 'tot de hersteladem', instruction: 'Laat je adem even rusten.', caption: 'Adem eerder in zodra je lichaam dat vraagt.' });
+    const remainingMs = segment.retentionEndMs - positionMs;
+    const seconds = Math.ceil(remainingMs / 1000);
+    const spoken = countdown ? countdown.text.replace(/\.$/, '') : null;
+    Object.assign(frame, { phase: 'hold', radius: .46, label: countdown ? 'Aftellen' : 'Rust in de stilte', value: spoken || `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`, remainingMs, foot: countdown ? 'volg de stem' : 'tot de hersteladem', instruction: countdown ? `${spoken}…` : 'Laat je adem even rusten.', caption: 'Adem eerder in zodra je lichaam dat vraagt.' });
   } else if (segment && positionMs >= segment.recoveryStartMs && positionMs < segment.recoveryEndMs) {
     Object.assign(frame, { phase: 'recovery', radius: .85, label: 'Herstelademhaling', value: '00:00', remainingMs: 0, foot: 'Volg je eigen lichaam', instruction: 'Een rustige hersteladem.', caption: 'Volg de gesproken begeleiding zonder te forceren.' });
     if (Number.isFinite(segment.recoveryHoldStartMs)) {
       const holding = positionMs >= segment.recoveryHoldStartMs;
       const remainingMs = Math.max(0, segment.recoveryHoldEndMs - positionMs);
       const amount = clamp((positionMs - segment.recoveryStartMs) / (segment.recoveryHoldStartMs - segment.recoveryStartMs), 0, 1);
-      Object.assign(frame, holding ? { direction: 'still', label: 'Rustig vasthouden', value: `00:${String(Math.ceil(remainingMs / 1000)).padStart(2, '0')}`, remainingMs, foot: 'tot het loslaten', instruction: 'Houd deze adem rustig vast.' } : { direction: 'in', radius: .46 + .39 * amount, label: 'Hersteladem', value: 'Adem in.', foot: 'Neem een rustige adem', instruction: 'Adem rustig in.' });
+      const spoken = countdown ? countdown.text.replace(/\.$/, '') : null;
+      Object.assign(frame, spoken ? { direction: 'still', label: 'Aftellen', value: spoken, remainingMs, foot: 'volg de stem', instruction: `${spoken}…` } : holding ? { direction: 'still', label: 'Rustig vasthouden', value: `00:${String(Math.ceil(remainingMs / 1000)).padStart(2, '0')}`, remainingMs, foot: 'tot het loslaten', instruction: 'Houd deze adem rustig vast.' } : { direction: 'in', radius: .46 + .39 * amount, label: 'Hersteladem', value: 'Adem in.', foot: 'Neem een rustige adem', instruction: 'Adem rustig in.' });
     }
   } else if (round) {
     Object.assign(frame, { phase: 'rest', radius: .6, label: `Ronde ${round.number}`, value: 'Adem.', foot: 'Op jouw tempo', instruction: 'Neem een rustig moment.', caption: 'Volg de gesproken begeleiding.' });
@@ -58,6 +62,7 @@ export class GuideScene {
     this.guide = guide;
     this.root = root;
     this.media = media;
+    this.audio = audio;
     this.enabled = true;
     this.raf = 0;
     this.snapshot = media.getSnapshot();
@@ -105,9 +110,10 @@ export class GuideScene {
     if (this.raf) return;
     const tick = () => {
       this.raf = 0;
-      // Sample currentTime on every display frame. Interpolation is between
-      // measured source frames; there is no easing or elapsed-time integrator.
-      this.render(this.media.getGuidePosition());
+      // The native media element is the sole visual clock. Reading currentTime
+      // directly avoids extra engine snapshots and keeps every frame locked to audio.
+      const position = Number(this.audio?.currentTime);
+      this.render(Number.isFinite(position) ? position : this.media.getGuidePosition());
       this.schedule();
     };
     this.raf = requestAnimationFrame(tick);
